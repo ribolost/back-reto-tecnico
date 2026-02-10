@@ -1,10 +1,15 @@
 package service.account;
 
 import common.DTO.AccountDTO;
+import common.error.ElementNotFoundException;
+import common.error.GenericException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import persistence.model.Account;
+import persistence.model.Customer;
 import persistence.repository.AccountRepository;
+import persistence.repository.CustomerRepository;
 
 import java.util.Optional;
 
@@ -15,16 +20,32 @@ public class AccountService {
     private AccountRepository accountRepository;
 
     @Autowired
+    private CustomerRepository customerRepository;
+
+    @Autowired
     private MapperAccountService accountMapper;
 
     @Autowired
     private IBANAccountGeneratorService accountNumberGenerator;
 
     public AccountDTO createAccount(AccountDTO account) {
-        String accountNumber = accountNumberGenerator.generateAccountNumberForCustomer(account.customerId());
-        Account newAccount = accountMapper.mapAccountDTOToEntity(account, accountNumber);
-        accountRepository.save(newAccount);
-        return accountMapper.mapAccountEntityToDTO(newAccount);
+
+        Optional<Customer> foundCustomer = customerRepository.findById(account.customerId());
+
+        return foundCustomer.map(customer -> {
+            Optional.ofNullable(getAccountByCustomerId(customer.getId())).ifPresent(
+                    accountFound -> {
+                        throw new GenericException("Couldn't create the account",
+                                "The customer already has an associated account.", "account");
+                    });
+            String accountNumber =
+                    accountNumberGenerator.generateAccountNumberForCustomer(account.customerId());
+            @Valid Account newAccount = accountMapper.mapAccountDTOToEntity(account, customer, accountNumber);
+            accountRepository.save(newAccount);
+            return accountMapper.mapAccountEntityToDTO(newAccount);
+
+        }).orElseThrow(() ->
+                new ElementNotFoundException("Customer not found. Couldn't create the account.", "customer"));
     }
 
     public AccountDTO getAccountByCustomerId(Integer customerId) {

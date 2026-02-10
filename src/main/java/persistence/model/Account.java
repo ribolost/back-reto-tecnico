@@ -1,6 +1,6 @@
 package persistence.model;
 
-import common.DTO.types.StatusAccountTypes;
+import common.DTO.type.StatusAccountTypes;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -20,13 +20,11 @@ public class Account {
     @Setter(AccessLevel.NONE)
     private Integer id;
 
-    @NotNull(message = "The account must have an associated customer.")
-    @JoinColumn(table = "customer", nullable = false, unique = true)
-    private Integer customerId;
+    @OneToOne(optional = false)
+    private Customer customer;
 
     @NotNull(message = "The account number can't be null.")
     @Column(unique = true)
-    //TODO Se puede crear una validación personalizada que esté acorde con el estándar IBAN
     private String accountNumber;
 
     @Enumerated(EnumType.STRING)

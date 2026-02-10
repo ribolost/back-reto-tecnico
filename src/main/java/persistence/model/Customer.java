@@ -1,6 +1,6 @@
 package persistence.model;
 
-import common.DTO.types.CustomerDocumentTypes;
+import common.DTO.type.CustomerDocumentTypes;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -22,16 +22,13 @@ public class Customer {
     @Enumerated(EnumType.STRING)
     private CustomerDocumentTypes documentType;
 
-    @NotBlank(message = "The document number cannot be empty.")
-    @NotEmpty(message = "The document number cannot be empty.")
-    //TODO Toca mirar que valores son buenos acá
     @Size(min = 2, max = 10, message = "The document number length must be between 2 and 10.")
     private String documentNumber;
 
+    @Size(max = 100, message = "The full name length must be 100 characters maximum.")
     private String fullName;
 
-    @Email(message = "The provided email is not valid.")
-    @NotBlank(message = "The email cannot be empty.")
+    @Size(max = 100, message = "The email length must be 100 characters maximum.")
     private String email;
 
 }

@@ -1,6 +1,10 @@
 package service.customer;
 
 import common.DTO.CustomerDTO;
+import common.error.ElementValidationException;
+import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import persistence.model.Customer;
@@ -18,9 +22,10 @@ public class CustomerService {
     @Autowired
     private MapperCustomerService customerMapper;
 
-    public void createCustomer(CustomerDTO customer){
-            Customer createdCustomer = customerMapper.mapCustomerDTOToEntity(customer);
-            customerRepository.save(createdCustomer);
+    public CustomerDTO createCustomer(CustomerDTO customer){
+            @Valid Customer newCustomer = customerMapper.mapCustomerDTOToEntity(customer);
+            customerRepository.save(newCustomer);
+            return customerMapper.mapCustomerEntityToDTO(newCustomer);
     }
 
     public List<CustomerDTO> getAllCustomers(){
