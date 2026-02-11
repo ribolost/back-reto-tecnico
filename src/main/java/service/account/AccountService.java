@@ -1,8 +1,8 @@
 package service.account;
 
 import common.DTO.AccountDTO;
+import common.error.BusinessException;
 import common.error.ElementNotFoundException;
-import common.error.GenericException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ public class AccountService {
     private MapperAccountService accountMapper;
 
     @Autowired
-    private IBANAccountGeneratorService accountNumberGenerator;
+    private AccountGeneratorService accountNumberGenerator;
 
     public AccountDTO createAccount(AccountDTO account) {
 
@@ -35,7 +35,7 @@ public class AccountService {
         return foundCustomer.map(customer -> {
             Optional.ofNullable(getAccountByCustomerId(customer.getId())).ifPresent(
                     accountFound -> {
-                        throw new GenericException("Couldn't create the account",
+                        throw new BusinessException("Couldn't create the account",
                                 "The customer already has an associated account.", "account");
                     });
             String accountNumber =
@@ -49,6 +49,10 @@ public class AccountService {
     }
 
     public AccountDTO getAccountByCustomerId(Integer customerId) {
+        Optional<Customer> foundCustomer = customerRepository.findById(customerId);
+        foundCustomer.orElseThrow(
+                () -> new ElementNotFoundException("The customer doesn't exist. Can't get the accounts.", "customer"));
+
         Optional<Account> foundAccount = accountRepository.findByCustomerId(customerId);
         return foundAccount.map(account -> accountMapper.mapAccountEntityToDTO(account)).orElse(null);
     }

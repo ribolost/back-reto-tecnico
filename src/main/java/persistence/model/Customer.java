@@ -2,7 +2,7 @@ package persistence.model;
 
 import common.DTO.type.CustomerDocumentTypes;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity

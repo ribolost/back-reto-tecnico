@@ -10,7 +10,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import service.account.AccountService;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -29,21 +28,8 @@ public class AccountController {
     @GetMapping
     @Validated
     public ResponseEntity<?> getAccountByCustomerId(@RequestParam @NotNull final Integer customerId) {
-        try {
-            AccountDTO customerAccount = accountService.getAccountByCustomerId(customerId);
-            return new ResponseEntity<>(Optional.of(customerAccount), HttpStatus.ACCEPTED);
-        } catch (Exception ex) {
-            return new ResponseEntity<>(ex, HttpStatus.BAD_REQUEST);
-        }
+        AccountDTO customerAccount = accountService.getAccountByCustomerId(customerId);
+        return new ResponseEntity<>(Optional.ofNullable(customerAccount), HttpStatus.OK);
     }
 
-    //@GetMapping
-    //public ResponseEntity<?> getAllAccounts() {
-    //    try {
-    //        List<AccountDTO> accounts = accountService.getAllAccounts();
-    //        return new ResponseEntity<>(accounts, HttpStatus.ACCEPTED);
-    //    } catch (Exception ex) {
-    //        return new ResponseEntity<>(ex, HttpStatus.BAD_REQUEST);
-    //    }
-    //}
 }

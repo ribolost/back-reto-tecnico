@@ -3,11 +3,7 @@ package common.error;
 import java.util.Map;
 
 public class ElementNotFoundException extends RuntimeException implements TypeableException {
-    private String elementNotFound;
-
-    public ElementNotFoundException(String message) {
-        super(message);
-    }
+    private final String elementNotFound;
 
     public ElementNotFoundException(String message, String elementNotFound) {
         super(message);

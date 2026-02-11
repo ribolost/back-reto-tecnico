@@ -1,20 +1,14 @@
 package web.exception;
 
-import common.error.ElementNotFoundException;
-import common.error.GenericException;
-import common.error.TypeableException;
-import common.error.ElementValidationException;
+import common.error.*;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import tools.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +41,7 @@ public class GlobalExceptionHandler {
                 exception.getExceptionMessage(), exception.getDetailedErrorMessage()), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler({GenericException.class})
+    @ExceptionHandler({GenericException.class, BusinessException.class})
     public ResponseEntity<ExceptionResponse> handleGenericException(TypeableException exception) {
         return new ResponseEntity<>(new ExceptionResponse(exception.getCustomExceptionType(),
                 exception.getExceptionMessage(), exception.getDetailedErrorMessage()), HttpStatus.BAD_REQUEST);

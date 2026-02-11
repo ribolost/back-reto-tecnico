@@ -7,6 +7,10 @@ public class GenericException extends RuntimeException implements TypeableExcept
     public String genericDetailedMessage;
     public String exceptionElement;
 
+    public GenericException(String message) {
+        super(message);
+    }
+
     public GenericException(String message, String detailedMessage, String exceptionElement){
         super(message);
         this.genericDetailedMessage = detailedMessage;
