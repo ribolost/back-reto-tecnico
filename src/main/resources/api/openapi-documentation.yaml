@@ -1,0 +1,289 @@
+openapi: 3.0.1
+info:
+  title: Customer Management API
+  description: API para el onboarding de clientes nuevos en el banco
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api
+    description: Servidor local de prueba
+tags:
+  - name: Customers
+    description: Endpoints para gestión de clientes
+  - name: Accounts
+    description: Endpoints para gestión de cuentas de clientes
+
+paths:
+  /customers:
+    post:
+      tags:
+        - Customers
+      summary: Crear un nuevo cliente
+      description: Crea un nuevo cliente en el sistema con los datos proporcionados
+      operationId: createCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerRequest'
+      responses:
+        '201':
+          description: Cliente creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          description: Error de validación en los datos proporcionados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      tags:
+        - Customers
+      summary: Obtener todos los clientes
+      description: Retorna la lista completa de clientes registrados
+      operationId: getAllCustomers
+      responses:
+        '200':
+          description: Lista de clientes obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          description: Error en la solicitud
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+/accounts:
+  post:
+    tags:
+      - Accounts
+    summary: Crear una nueva cuenta
+    description: Crea una nueva cuenta bancaria para un cliente. El ID y número de cuenta se generan automáticamente.
+    operationId: createAccount
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AccountCreateRequest'
+    responses:
+      '201':
+        description: Cuenta creada exitosamente
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountResponse'
+      '400':
+        description: Error de validación en los datos proporcionados
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+      '404':
+        description: Cliente no encontrado
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+
+
+  get:
+    tags:
+      - Accounts
+    summary: Obtener cuenta por ID de cliente
+    description: Retorna la cuenta asociada a un cliente específico
+    operationId: getAccountByCustomerId
+    parameters:
+      - name: customerId
+        in: query
+        required: true
+        description: ID del cliente propietario de la cuenta
+        schema:
+          type: integer
+          minimum: 1
+          example: 1
+    responses:
+      '200':
+        description: |
+          Cliente encontrado. Puede retornar:
+          - La cuenta del cliente si existe
+          - null si el cliente no tiene cuenta asociada
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/AccountResponse'
+                - type: 'null'
+            example: null
+      '404':
+        description: No se encontró el cliente
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CustomerDocumentTypes:
+      type: string
+      description: Tipos de documento de identidad
+      enum:
+        - CC
+        - CE
+        - PAS
+      example: "CC"
+
+    CustomerRequest:
+      type: object
+      description: Datos requeridos para crear un nuevo cliente
+      required:
+        - documentType
+        - documentNumber
+        - email
+      properties:
+        documentType:
+          $ref: '#/components/schemas/CustomerDocumentTypes'
+        documentNumber:
+          type: string
+          description: Número de documento del cliente
+          example: "12345678"
+          minLength: 1
+        fullName:
+          type: string
+          description: Nombre completo del cliente
+          example: "Juan Pérez Martínez"
+          nullable: true
+        email:
+          type: string
+          description: Correo electrónico del cliente
+          format: email
+          example: "juan.perez@email.com"
+          minLength: 1
+
+    CustomerResponse:
+      type: object
+      description: Datos completos del cliente incluyendo ID
+      properties:
+        id:
+          type: integer
+          description: Identificador único del cliente
+          example: 1
+          readOnly: true
+        documentType:
+          $ref: '#/components/schemas/CustomerDocumentTypes'
+        documentNumber:
+          type: string
+          description: Número de documento del cliente
+          example: "12345678"
+        fullName:
+          type: string
+          description: Nombre completo del cliente
+          example: "Juan Pérez Martínez"
+          nullable: true
+        email:
+          type: string
+          description: Correo electrónico del cliente
+          format: email
+          example: "juan.perez@email.com"
+
+    StatusAccountTypes:
+      type: string
+      description: Estados posibles de una cuenta bancaria
+      enum:
+        - ACTIVE
+        - INACTIVE
+      example: "ACTIVE"
+
+      AccountCreateRequest:
+        type: object
+        description: Datos requeridos para crear una nueva cuenta (el ID, accountNumber y status se generan automáticamente)
+        required:
+          - customerId
+          - status
+        properties:
+          customerId:
+            type: integer
+            description: ID del cliente propietario de la cuenta
+            example: 1
+            minimum: 1
+          status:
+            $ref: '#/components/schemas/StatusAccountTypes'
+        example:
+          customerId: 1
+          status: "ACTIVE"
+
+      AccountResponse:
+        type: object
+        description: Datos completos de la cuenta incluyendo ID y número de cuenta generados
+        properties:
+          id:
+            type: integer
+            description: Identificador único de la cuenta (generado automáticamente)
+            example: 100
+            readOnly: true
+          customerId:
+            type: integer
+            description: ID del cliente propietario de la cuenta
+            example: 1
+            readOnly: false
+          accountNumber:
+            type: string
+            description: Número de cuenta único (generado automáticamente)
+            example: "CO-2100-0418-2733-5341-0001"
+            readOnly: true
+          status:
+            $ref: '#/components/schemas/StatusAccountTypes'
+        required:
+          - id
+          - customerId
+          - accountNumber
+          - status
+        example:
+          id: 100
+          customerId: 1
+          accountNumber: "CO-2100-0418-2733-5341-0001"
+          status: "ACTIVE"
+
+    ExceptionType:
+      type: string
+      description: Tipo de excepción personalizada
+      enum:
+        - VALIDATION
+        - NOT_FOUND
+        - BUSINESS
+        - GENERIC
+      example: "VALIDATION"
+
+    ErrorResponse:
+      type: object
+      description: Estructura estándar para respuestas de error
+      properties:
+        type:
+          $ref: '#/components/schemas/ExceptionType'
+        message:
+          type: string
+          description: Mensaje descriptivo del error
+          example: "There's a format error."
+        detailedError:
+          type: object
+          description: Mapa con errores detallados por campo
+          additionalProperties:
+            type: string
+          example:
+            email: "The provided email is not valid."
+            documentNumber: "The document number cannot be empty or null."
+          nullable: true
+      required:
+        - type
+        - message
+
+  securitySchemes: {}
+
+security: []
