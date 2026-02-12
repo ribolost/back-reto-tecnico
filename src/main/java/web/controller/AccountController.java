@@ -27,7 +27,7 @@ public class AccountController {
 
     @GetMapping
     @Validated
-    public ResponseEntity<?> getAccountByCustomerId(@RequestParam @NotNull final Integer customerId) {
+    public ResponseEntity<?> getAccountByCustomerId(@RequestParam("customerId") @NotNull final Integer customerId) {
         AccountDTO customerAccount = accountService.getAccountByCustomerId(customerId);
         return new ResponseEntity<>(Optional.ofNullable(customerAccount), HttpStatus.OK);
     }
